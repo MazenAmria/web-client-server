@@ -52,6 +52,8 @@ int32_t main(int32_t argc, char **argv) {
 
     fclose(recv_header);
 
+    // TODO: Parse the Headers
+
     // Just for Transfer-Encoding: chunked
 
     while (1) {
