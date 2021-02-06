@@ -36,28 +36,32 @@ int32_t main(int32_t argc, char **argv) {
     for (;;) {
         struct sockaddr_in addr;
         socklen_t addr_len;
+        char client_addr[MAX_LINE];
 
         printf("Listening for requests on port: %d\n", SERVER_PORT);
         fflush(stdout);
-        connection_fd = accept(listener_fd, (struct sockaddr *) NULL, NULL);
+        connection_fd = accept(listener_fd, (struct sockaddr *) &addr, &addr_len);
+
+        inet_ntop(AF_INET, &addr, client_addr, MAX_LINE);
+        printf("-- IP: %s\n\n", client_addr);
 
         memset(recv_line, 0, MAX_LINE);
 
         while ((n = read(connection_fd, recv_line, MAX_LINE)) > 0) {
             fprintf(recv_request, "%s", recv_line);
-            if (strcmp(recv_line + n - 4, "\r\n\r\n") == 0) {
+            if (n >= 4 && !strcmp(recv_line + n - 4, "\r\n\r\n")) {
                 break;
             }
             memset(recv_line, 0, MAX_LINE);
         }
-
-        fclose(recv_request);
 
         if (n < 0) {
             raise_err("Read error.");
         }
 
         snprintf(send_line, MAX_LINE, "HTTP/1.1 200 OK\r\n\r\nHello.");
+        write(connection_fd, send_line, strlen(send_line));
+        close(connection_fd);
     }
 }
 
