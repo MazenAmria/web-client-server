@@ -3,4 +3,4 @@ project(web_server C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(web_server main.c)
+add_executable(web_server tcp_client.c tcp_server.c common.h)
