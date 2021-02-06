@@ -10,6 +10,8 @@ int32_t main (int32_t argc, char ** argv) {
     char send_line[MAX_LINE];
     char recv_line[MAX_LINE];
     struct sockaddr_in server_addr;
+    FILE *recv_header = fopen("recv_header", "w");
+    FILE *recv_content = fopen("recv_content", "w");
 
     if (argc != 2) {
         raise_err("usage: %s <server address>", argv[0]);
@@ -27,25 +29,51 @@ int32_t main (int32_t argc, char ** argv) {
         raise_err("inet_pton error at %s", argv[1]);
     }
 
-    if (connect(socket_fd, (const struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
+    if (connect(socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
         raise_err("Connection failed.");
     }
 
     sprintf(send_line, "GET / HTTP/1.1\r\n\r\n");
     send_bytes = strlen(send_line);
 
-    if (write(socket_fd, send_line, send_bytes) != send_bytes) {
+    if (send(socket_fd, send_line, send_bytes, 0) != send_bytes) {
         raise_err("Write error.");
     }
 
-    memset(recv_line, 0, MAX_LINE);
+    while (1) {
+        while(read_line(socket_fd, recv_line)) {
+            fprintf(recv_header, "%s", recv_line);
+        }
+        if (!strcmp(recv_line, "\r\n")) {
+            break;
+        }
+        fprintf(recv_header, "%s", recv_line);
+    }
 
-    while ((n = read(socket_fd, recv_line, MAX_LINE)) > 0) {
-        printf("%s", recv_line);
+    fclose(recv_header);
+
+    // Just for Transfer-Encoding: chunked
+
+    while (1) {
+        read_line(socket_fd, recv_line);
+        n = strtol(recv_line, NULL, 16);
+        if (n > 0) {
+            while (read_nbytes(socket_fd, recv_line, &n)) {
+                fprintf(recv_content, "%s", recv_line);
+            }
+            fprintf(recv_content, "%s", recv_line);
+            // read until CRLF and discard
+            while (read_line(socket_fd, recv_line));
+        } else if (n < 0) {
+            raise_err("Read error.");
+        } else {
+            // read a line and discard it
+            while (read_line(socket_fd, recv_line));
+            break;
+        }
     }
-    if (n < 0) {
-        raise_err("Read error.");
-    }
+
+    fclose(recv_content);
 
     exit(0);
 }
