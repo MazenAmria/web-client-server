@@ -18,8 +18,11 @@
 #define SERVER_PORT 80
 #define MAX_LINE 4096
 
-void raise_err (const char *fmt, ...);
-int8_t read_line (int32_t fd, char * buffer);
+void raise_err(const char *fmt, ...);
+
+int8_t read_line(int32_t fd, char *buffer);
+
+int8_t read_nbytes(int32_t fd, char *buffer, int32_t *n);
 
 void raise_err(const char *fmt, ...) {
     int32_t err_no;
@@ -42,7 +45,7 @@ void raise_err(const char *fmt, ...) {
     exit(1);
 }
 
-int8_t read_line (int32_t fd, char * buffer) {
+int8_t read_line(int32_t fd, char *buffer) {
     int32_t ptr = 0, n;
     memset(buffer, 0, MAX_LINE);
     while (ptr < MAX_LINE) {
@@ -59,7 +62,7 @@ int8_t read_line (int32_t fd, char * buffer) {
     return -1;
 }
 
-int8_t read_nbytes (int32_t fd, char * buffer, int32_t * n) {
+int8_t read_nbytes(int32_t fd, char *buffer, int32_t *n) {
     int32_t _n;
     memset(buffer, 0, MAX_LINE);
 

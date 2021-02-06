@@ -4,7 +4,7 @@
 
 #include "common.h"
 
-int32_t main (int32_t argc, char ** argv) {
+int32_t main(int32_t argc, char **argv) {
     int32_t socket_fd;
     int32_t send_bytes, n;
     char send_line[MAX_LINE];
@@ -41,7 +41,7 @@ int32_t main (int32_t argc, char ** argv) {
     }
 
     while (1) {
-        while(read_line(socket_fd, recv_line)) {
+        while (read_line(socket_fd, recv_line)) {
             fprintf(recv_header, "%s", recv_line);
         }
         if (!strcmp(recv_line, "\r\n")) {

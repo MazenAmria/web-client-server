@@ -4,7 +4,10 @@
 
 #include "common.h"
 
-int32_t main (int32_t argc, char ** argv) {
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "EndlessLoop"
+
+int32_t main(int32_t argc, char **argv) {
     int32_t listener_fd;
     int32_t connection_fd;
     int32_t n;
@@ -22,15 +25,15 @@ int32_t main (int32_t argc, char ** argv) {
     server_addr.sin_port = htons(SERVER_PORT);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if(bind(listener_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
+    if (bind(listener_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
         raise_err("Binding error");
     }
 
-    if(listen(listener_fd, 10) < 0) {
+    if (listen(listener_fd, 10) < 0) {
         raise_err("Listening error");
     }
 
-    for ( ; ; ) {
+    for (;;) {
         struct sockaddr_in addr;
         socklen_t addr_len;
 
@@ -41,7 +44,7 @@ int32_t main (int32_t argc, char ** argv) {
         memset(recv_line, 0, MAX_LINE);
 
         while ((n = read(connection_fd, recv_line, MAX_LINE)) > 0) {
-            fprintf(recv_request,"%s", recv_line);
+            fprintf(recv_request, "%s", recv_line);
             if (strcmp(recv_line + n - 4, "\r\n\r\n") == 0) {
                 break;
             }
@@ -57,3 +60,5 @@ int32_t main (int32_t argc, char ** argv) {
         snprintf(send_line, MAX_LINE, "HTTP/1.1 200 OK\r\n\r\nHello.");
     }
 }
+
+#pragma clang diagnostic pop
